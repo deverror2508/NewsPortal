@@ -2,23 +2,26 @@ import { useState, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
 import { 
   FiFileText, FiClock, FiUsers, FiFolder, FiPlus, 
-  FiTrendingUp, FiTrendingDown, FiActivity, FiArrowRight, FiZap, FiTarget, FiMessageSquare
+  FiTrendingUp, FiTrendingDown, FiActivity, FiArrowRight, FiZap, FiTarget, FiMessageSquare, FiUserPlus
 } from 'react-icons/fi';
+import { formatDistanceToNow } from 'date-fns';
 import { articlesAPI, categoriesAPI, usersAPI } from '../../api';
 
 const DashboardHome = () => {
   const [stats, setStats] = useState({ users: 0, articles: 0, pending: 0, categories: 0 });
+  const [recentActivity, setRecentActivity] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchStats = async () => {
+    const fetchDashboardData = async () => {
       setLoading(true);
       try {
-        const [usersRes, articlesRes, pendingRes, catsRes] = await Promise.all([
+        const [usersRes, articlesRes, pendingRes, catsRes, recentArticlesRes] = await Promise.all([
           usersAPI.getAll({ limit: 1 }),
           articlesAPI.getAllAdmin({ limit: 1 }),
           articlesAPI.getPending(),
-          categoriesAPI.getAll()
+          categoriesAPI.getAll(),
+          articlesAPI.getAllAdmin({ limit: 5 }) // Fetch 5 most recent articles
         ]);
         
         setStats({
@@ -27,12 +30,25 @@ const DashboardHome = () => {
           pending: pendingRes.data.data.length || 0,
           categories: catsRes.data.data.length || 0
         });
+
+        // Map articles to activity format
+        const activities = recentArticlesRes.data.data.map(article => ({
+          id: article._id,
+          icon: article.status === 'published' ? <FiZap /> : <FiClock />,
+          color: article.status === 'published' ? '#10b881' : '#f59e0b',
+          title: article.status === 'published' ? 'Article Published' : 'New Submission',
+          time: formatDistanceToNow(new Date(article.createdAt), { addSuffix: true }),
+          desc: `"${article.title}" by ${article.author?.name || 'Unknown'}`
+        }));
+
+        setRecentActivity(activities);
+
       } catch (err) {
-        console.error('Failed to fetch stats', err);
+        console.error('Failed to fetch dashboard data', err);
       }
       setLoading(false);
     };
-    fetchStats();
+    fetchDashboardData();
   }, []);
 
   return (
@@ -49,7 +65,7 @@ const DashboardHome = () => {
             <div className="stat-trend-saas up"><FiTrendingUp /> 12%</div>
           </div>
           <div className="stat-info-saas">
-            <h3 className="stat-value-saas">{stats.articles}</h3>
+            <h3 className="stat-value-saas">{loading ? '...' : stats.articles}</h3>
             <span className="stat-label-saas">Total Articles</span>
           </div>
         </div>
@@ -60,7 +76,7 @@ const DashboardHome = () => {
             <div className="stat-trend-saas down"><FiTrendingDown /> 2%</div>
           </div>
           <div className="stat-info-saas">
-            <h3 className="stat-value-saas">{stats.pending}</h3>
+            <h3 className="stat-value-saas">{loading ? '...' : stats.pending}</h3>
             <span className="stat-label-saas">Pending Review</span>
           </div>
         </div>
@@ -71,7 +87,7 @@ const DashboardHome = () => {
             <div className="stat-trend-saas up"><FiTrendingUp /> 8%</div>
           </div>
           <div className="stat-info-saas">
-            <h3 className="stat-value-saas">{stats.users}</h3>
+            <h3 className="stat-value-saas">{loading ? '...' : stats.users}</h3>
             <span className="stat-label-saas">Active Authors</span>
           </div>
         </div>
@@ -82,7 +98,7 @@ const DashboardHome = () => {
             <div className="stat-trend-saas up"><FiTrendingUp /> 4%</div>
           </div>
           <div className="stat-info-saas">
-            <h3 className="stat-value-saas">{stats.categories}</h3>
+            <h3 className="stat-value-saas">{loading ? '...' : stats.categories}</h3>
             <span className="stat-label-saas">Taxonomy Units</span>
           </div>
         </div>
@@ -92,28 +108,30 @@ const DashboardHome = () => {
         <div className="saas-card" style={{ padding: '40px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
             <h3 style={{ margin: 0, fontSize: '22px', fontWeight: 900 }}>Recent Activity</h3>
-            <button className="btn-glow" style={{ background: '#ffffffff', border: 'none', padding: '10px 20px', borderRadius: '10px', fontSize: '13px', fontWeight: 700, color: '#475569', cursor: 'pointer' }}>View All</button>
+            <NavLink to="/admin/posts" className="btn-glow" style={{ background: '#f8fafc', border: '1px solid #e2e8f0', padding: '10px 20px', borderRadius: '10px', fontSize: '13px', fontWeight: 700, color: '#475569', cursor: 'pointer', textDecoration: 'none' }}>View All</NavLink>
           </div>
           
           <div className="activity-list">
-            {[
-              { icon: <FiZap />, color: '#3b82f6', title: 'New article published', time: '2 mins ago', desc: 'Dr. Sarah just published "Advances in Cardiology".' },
-              { icon: <FiUsers />, color: '#10b881', title: 'New author onboarded', time: '45 mins ago', desc: 'Michael Scott joined the editorial team.' },
-              { icon: <FiMessageSquare />, color: '#f59e0b', title: 'Feedback received', time: '2 hours ago', desc: 'User requested more articles on mental health.' },
-            ].map((item, i) => (
-              <div key={i} className="activity-item">
-                <div className="activity-icon-box" style={{ background: `${item.color}10`, color: item.color }}>
-                  {item.icon}
-                </div>
-                <div className="activity-content">
-                  <div className="activity-header">
-                    <h4 className="activity-title">{item.title}</h4>
-                    <span className="activity-time">{item.time}</span>
+            {loading ? (
+              <div style={{ padding: '40px', textAlign: 'center', color: '#94a3b8' }}>Loading activity stream...</div>
+            ) : recentActivity.length > 0 ? (
+              recentActivity.map((item) => (
+                <div key={item.id} className="activity-item">
+                  <div className="activity-icon-box" style={{ background: `${item.color}10`, color: item.color }}>
+                    {item.icon}
                   </div>
-                  <p className="activity-desc">{item.desc}</p>
+                  <div className="activity-content">
+                    <div className="activity-header">
+                      <h4 className="activity-title">{item.title}</h4>
+                      <span className="activity-time">{item.time}</span>
+                    </div>
+                    <p className="activity-desc">{item.desc}</p>
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))
+            ) : (
+              <div style={{ padding: '40px', textAlign: 'center', color: '#94a3b8' }}>No recent activity found.</div>
+            )}
           </div>
         </div>
 
@@ -128,11 +146,19 @@ const DashboardHome = () => {
               </div>
               <FiArrowRight style={{ marginLeft: 'auto', color: '#cbd5e1' }} />
             </NavLink>
-            <NavLink to="/admin/moderation" className="action-card-saas">
+            <NavLink to="/admin/posts" className="action-card-saas">
               <div className="action-icon-saas" style={{ color: '#f59e0b' }}><FiTarget /></div>
               <div className="action-info-saas">
-                <h4 style={{ margin: 0, fontSize: '15px', fontWeight: 700 }}>Moderation</h4>
+                <h4 style={{ margin: 0, fontSize: '15px', fontWeight: 700 }}>Manage Posts</h4>
                 <p style={{ margin: '2px 0 0', fontSize: '12px', color: '#64748b' }}>Review submissions</p>
+              </div>
+              <FiArrowRight style={{ marginLeft: 'auto', color: '#cbd5e1' }} />
+            </NavLink>
+            <NavLink to="/admin/users" className="action-card-saas">
+              <div className="action-icon-saas" style={{ color: '#10b881' }}><FiUserPlus /></div>
+              <div className="action-info-saas">
+                <h4 style={{ margin: 0, fontSize: '15px', fontWeight: 700 }}>Manage Users</h4>
+                <p style={{ margin: '2px 0 0', fontSize: '12px', color: '#64748b' }}>Roles & access control</p>
               </div>
               <FiArrowRight style={{ marginLeft: 'auto', color: '#cbd5e1' }} />
             </NavLink>
@@ -152,3 +178,4 @@ const DashboardHome = () => {
 };
 
 export default DashboardHome;
+

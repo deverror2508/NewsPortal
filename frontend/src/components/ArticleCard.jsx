@@ -6,7 +6,7 @@ const API_URL = 'http://localhost:5000';
 
 const ArticleCard = ({ article }) => {
   const coverImage = article.coverImage
-    ? `${API_URL}${article.coverImage}`
+    ? (article.coverImage.startsWith('http') ? article.coverImage : `${API_URL}${article.coverImage}`)
     : null;
 
   const hasVideo = !!article.videoUrl;
@@ -31,25 +31,33 @@ const ArticleCard = ({ article }) => {
       {/* Image wrapper — overflow hidden so the zoom stays clipped */}
       <div style={{ overflow: 'hidden', flexShrink: 0, position: 'relative' }}>
         {coverImage ? (
-          <img src={coverImage} alt={article.title} className="card-image" />
-        ) : (
-          <div
-            className="card-image"
-            style={{
-              background: `linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%)`,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: 'white',
-              fontSize: '40px',
-              fontFamily: 'var(--font-display)',
-              fontWeight: 800,
-              letterSpacing: '-0.02em',
+          <img 
+            src={coverImage} 
+            alt={article.title} 
+            className="card-image" 
+            onError={(e) => {
+              e.target.style.display = 'none';
+              e.target.nextSibling.style.display = 'flex';
             }}
-          >
-            {article.title?.charAt(0)}
-          </div>
-        )}
+          />
+        ) : null}
+        
+        <div
+          className="card-image"
+          style={{
+            display: coverImage ? 'none' : 'flex',
+            background: `linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%)`,
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: 'white',
+            fontSize: '40px',
+            fontFamily: 'var(--font-display)',
+            fontWeight: 800,
+            letterSpacing: '-0.02em',
+          }}
+        >
+          {article.title?.charAt(0)}
+        </div>
 
         {/* Video badge */}
         {hasVideo && (

@@ -150,8 +150,12 @@ exports.createArticle = async (req, res, next) => {
       category,
       tags: tags || [],
       author: req.user._id,
-      status: status === 'pending' ? 'pending' : 'draft',
+      status: req.user.role === 'admin' && status === 'published' ? 'published' : (status === 'pending' ? 'pending' : 'draft'),
     };
+
+    if (articleData.status === 'published') {
+      articleData.publishedAt = new Date();
+    }
 
     // Handle cover image upload (upload.fields stores files as arrays)
     if (req.files?.coverImage?.[0]) {
@@ -209,6 +213,14 @@ exports.updateArticle = async (req, res, next) => {
     if (summary !== undefined) article.summary = summary;
     if (category) article.category = category;
     if (tags) article.tags = tags;
+    
+    // Allow admins to change status directly
+    if (req.user.role === 'admin' && req.body.status) {
+      article.status = req.body.status;
+      if (article.status === 'published' && !article.publishedAt) {
+        article.publishedAt = new Date();
+      }
+    }
 
     // Handle cover image upload (upload.fields stores files as arrays)
     if (req.files?.coverImage?.[0]) {
@@ -437,11 +449,12 @@ exports.getMyArticles = async (req, res, next) => {
 // @access  Private (Admin)
 exports.getAllArticlesAdmin = async (req, res, next) => {
   try {
-    const { page = 1, limit = 10, status, keyword } = req.query;
+    const { page = 1, limit = 10, status, keyword, category } = req.query;
     const query = {};
 
     if (status) query.status = status;
     if (keyword) query.$text = { $search: keyword };
+    if (category) query.category = category;
 
     const pageNum = parseInt(page, 10);
     const limitNum = Math.min(parseInt(limit, 10), 50);
