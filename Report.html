@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="hi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Report - News Portal</title>
+    <style>
+        :root {
+            --primary: #1a73e8;
+            --secondary: #5f6368;
+            --bg: #ffffff;
+            --text: #202124;
+            --border: #dadce0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--text);
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 20px;
+            background-color: #f8f9fa;
+        }
+
+        .container {
+            background: var(--bg);
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--border);
+        }
+
+        h1 {
+            color: var(--primary);
+            border-bottom: 2px solid var(--primary);
+            padding-bottom: 15px;
+            margin-top: 0;
+            text-align: center;
+            font-size: 2.2em;
+        }
+
+        h2 {
+            color: var(--primary);
+            margin-top: 25px;
+            border-left: 5px solid var(--primary);
+            padding-left: 15px;
+            font-size: 1.4em;
+            background: #f1f3f4;
+            padding-top: 8px;
+            padding-bottom: 8px;
+        }
+
+        h3 {
+            color: #444;
+            margin-top: 20px;
+            font-size: 1.1em;
+            text-decoration: underline;
+        }
+
+        p,
+        li {
+            font-size: 1.05em;
+        }
+
+        ul {
+            padding-left: 20px;
+        }
+
+        li {
+            margin-bottom: 8px;
+        }
+
+        .highlight {
+            background-color: #fff9c4;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-weight: bold;
+        }
+
+        .footer {
+            margin-top: 40px;
+            text-align: center;
+            font-size: 0.9em;
+            color: var(--secondary);
+            border-top: 1px solid var(--border);
+            padding-top: 20px;
+        }
+
+        .tip-box {
+            background: #e8f5e9;
+            border: 1px solid #c8e6c9;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+
+        @media print {
+            body {
+                margin: 0;
+                background: white;
+            }
+
+            .container {
+                box-shadow: none;
+                border: none;
+                width: 100%;
+                padding: 20px;
+            }
+
+            .no-print {
+                display: none;
+            }
+
+            button {
+                display: none;
+            }
+        }
+
+        .btn-container {
+            text-align: right;
+            margin-bottom: 10px;
+        }
+
+        .print-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1em;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="btn-container no-print">
+        <button class="print-btn" onclick="window.print()">Download/Print PDF</button>
+    </div>
+
+    <div class="container">
+        <h1>Project Presentation Guide</h1>
+        <p style="text-align: center; font-style: italic; color: var(--secondary);">News Portal Web Application - MERN
+            Stack Project</p>
+
+        <h2>1. Introduction (Project ka maksad)</h2>
+        <p>"Sir/Ma'am, mera project ek dynamic <span class="highlight">News Portal</span> hai. Iska objective ek aisa
+            platform banana hai jahan news authors apne articles publish kar sakein aur readers latest news categories
+            ke hisaab se padh sakein. Yeh ek professional workflow follow karta hai jisme editor (admin) content ko
+            verify karne ke baad hi publish karta hai."</p>
+
+        <h2>2. Technology Stack (MERN Stack)</h2>
+        <ul>
+            <li><strong>Frontend:</strong> React.js (User Interface ke liye), CSS (Styling ke liye).</li>
+            <li><strong>Backend:</strong> Node.js aur Express.js (Api aur Logic ke liye).</li>
+            <li><strong>Database:</strong> MongoDB (Data store karne ke liye).</li>
+            <li><strong>Security:</strong> JWT (JSON Web Tokens) user authentication ke liye use kiya gaya hai.</li>
+            <li><strong>File Handling:</strong> Multer middleware use kiya gaya hai images upload karne ke liye.</li>
+        </ul>
+
+        <h2>3. Core Modules & Features</h2>
+        <ul>
+            <li><strong>User Authentication:</strong> Login, Register, aur 'Forgot Password' functionality with secure
+                JWT tokens.</li>
+            <li><strong>Role-Based Access Control (RBAC):</strong>
+                <ul>
+                    <li><strong>Author:</strong> Article likh sakta hai, draft save kar sakta hai, aur approval ke liye
+                        bhej sakta hai.</li>
+                </ul>
+                <ul>
+                    <li><strong>Admin:</strong> Poore portal ko control karta hai. Articles approve/reject karna aur
+                        categories manage karna iska kaam hai.</li>
+                </ul>
+            </li>
+            <li><strong>Article Management (CRUD):</strong>
+                <ul>
+                    <li>Rich Text Editor (React Quill) use kiya gaya hai taki news ko HTML format mein likha ja sake.
+                    </li>
+                    <li>Article mein Cover Images, Tags aur Categories add karne ka option hai.</li>
+                </ul>
+            </li>
+            <li><strong>News Workflow:</strong> Article 'Draft' se 'Pending' state mein jaata hai, aur fir Admin ke
+                approval ke baad 'Published' hota hai.</li>
+            <li><strong>Search & Filtering:</strong> Users keyword ya category (Sports, Tech, Politics) ke basis par
+                news search kar sakte hain.</li>
+        </ul>
+
+        <h2>4. Database Structure (Main Models)</h2>
+        <ul>
+            <li><strong>User Model:</strong> Name, Email, Password, aur Role (Admin/Author).</li>
+            <li><strong>Article Model:</strong> Title, Body, Summary, Cover Image, Category, Tags, Views aur Status
+                (Draft/Pending/Published).</li>
+            <li><strong>Category Model:</strong> Category ka naam aur slug (URL friendly name).</li>
+        </ul>
+
+        <h2>5. Challenges Faced & Solutions</h2>
+        <ul>
+            <li><strong>Challenge:</strong> Large payload aur image handle karna.</li>
+            <li><strong>Solution:</strong> Multer middleware aur Axios FormData ka help liya gaya images upload karne ke
+                liye.</li>
+            <li><strong>Challenge:</strong> User roles ke hisaab se pages access restrict karna.</li>
+            <li><strong>Solution:</strong> Protected Routes aur Middleware (auth/role) create kiye gaye backend aur
+                frontend dono level par.</li>
+        </ul>
+
+        <div class="tip-box">
+            <h3>Aapke Presentation ke liye Tips:</h3>
+            <ul>
+                <li><strong>Dashboard dikhayein:</strong> Pehle normal user ki tarah news padhkar dikhayein, fir Author
+                    ban kar ek article likhein, aur finally Admin ban kar use approve karein.</li>
+                <li><strong>Code structure batayein:</strong> Agar teacher code dekhein, toh batayein ki aapne Frontend
+                    aur Backend ko alag-alag (Decoupled) rakha hai taki application scalable rahe.</li>
+            </ul>
+        </div>
+        <div>
+            <p>Jab koi news article create hota hai, to wo sabse
+                pehle Pending stage me save hota hai. Uske baad admin ya authorized editor us content ko review karta
+                hai, source verify karta hai aur check karta hai ki information sahi hai ya nahi. Jab news completely
+                verify ho jati hai, tab use Approved stage me move kiya jata hai. Iske baad hi wo finally Published hoti
+                hai aur users ke liye visible hoti hai. System me proper tracking bhi hoti hai jisse har stage ka record
+                maintain rahta hai. Ye pura workflow ensure karta hai ki koi bhi fake ya misleading news website par
+                publish na ho aur sirf verified aur trustworthy information hi users tak pahunch sake.</p>
+        </div>
+
+        <div class="footer">
+            Project Presentation System &bull; 2026
+        </div>
+    </div>
+</body>
+
+</html>

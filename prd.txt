@@ -1,0 +1,891 @@
+
+
+
+PRODUCT REQUIREMENT DOCUMENT
+
+News Portal Web Application
+
+Version:  1.0
+Date:  April 15, 2026
+Status:  Draft
+Owner:  Product Management
+
+
+
+
+
+Tech Stack:  React.js  |  Node.js + Express.js  |  MongoDB
+
+
+1. Executive Summary
+This Product Requirement Document (PRD) outlines the complete specifications for building a full-featured News Portal Web Application. The platform will serve as a modern, scalable digital news ecosystem enabling journalists, authors, and registered users to create, publish, and consume news content across multiple categories.
+The News Portal will be built on a proven MERN-adjacent stack: React.js on the frontend, Node.js + Express.js on the backend, and MongoDB as the primary datastore. The platform prioritizes performance, SEO discoverability, role-based access control, and mobile-first responsive design.
+
+Core Value Proposition
+A single, unified platform where readers discover categorized news, authors publish rich-media articles, and administrators govern content quality — all through an intuitive, fast-loading, SEO-optimized interface.
+
+2. Problem Statement
+The digital news landscape is fragmented. Readers struggle to find credible, categorized, and searchable content in one place. Independent journalists and content creators lack affordable, easy-to-use platforms to publish news without depending on large media conglomerates. Additionally, most lightweight news platforms sacrifice either SEO performance, editorial control, or user experience.
+
+Key Pain Points
+Readers cannot efficiently search, filter, or discover relevant news by category, date, or keyword on smaller platforms.
+Independent authors lack a self-service publishing tool with rich-text editing and image upload capabilities.
+News aggregators offer no editorial oversight, leading to misinformation and low-quality submissions.
+Most news portals are not mobile-optimized, alienating smartphone-first audiences.
+Small news websites are poorly indexed by search engines due to missing SEO metadata and non-semantic URLs.
+
+3. Objectives & Goals
+Primary Objectives
+Build a production-grade news portal with robust user authentication and role-based permissions.
+Enable rich-content article creation with image upload, formatting tools, and category tagging.
+Implement powerful search and multi-dimensional filtering (keyword, date, category).
+Establish an admin-governed approval workflow for user-submitted articles.
+Deliver a mobile-first, accessible, and SEO-optimized frontend.
+
+Business Goals
+Achieve a Page Speed Insights score of 85+ on mobile within 3 months of launch.
+Onboard 500 registered users and 50 active authors in the first 6 months.
+Maintain 99.5% uptime with a mean time to recovery (MTTR) under 30 minutes.
+Target top-5 search ranking for primary news category keywords within 12 months.
+
+4. Target Audience
+Segment
+Description
+Primary Need
+General Readers
+Adults 18–55 who consume daily news on mobile and desktop
+Fast, categorized, searchable news
+Independent Journalists
+Freelancers and bloggers seeking a publishing platform
+Rich editor, author dashboard, visibility
+News Editors / Admins
+Editorial staff managing content quality and categories
+Approval workflow, category control
+Students & Researchers
+Academic users looking for archived or filtered articles
+Date filters, keyword search, SEO-indexed URLs
+
+5. User Personas
+Persona 1 — Rahul, The Daily Reader
+Attribute
+Detail
+Age / Location
+28, Bengaluru, India
+Device
+Primarily smartphone (Android)
+Goals
+Read latest tech and sports news quickly during commute
+Frustrations
+Cluttered ads, slow-loading pages, no category filter
+Success Metric
+Finds and reads an article in under 30 seconds
+
+Persona 2 — Priya, The Independent Journalist
+Attribute
+Detail
+Age / Location
+34, Delhi, India
+Device
+Laptop (primary) + tablet
+Goals
+Publish well-formatted articles with images and get reader traction
+Frustrations
+Complex CMSes, lack of image support, no approval feedback
+Success Metric
+Article published and approved within 24 hours of submission
+
+Persona 3 — Admin Anil, The Editorial Manager
+Attribute
+Detail
+Age / Location
+45, Mumbai, India
+Device
+Desktop workstation
+Goals
+Review, approve/reject submissions and manage categories efficiently
+Frustrations
+No approval queue, inability to moderate comments, poor audit trail
+Success Metric
+Reviews and acts on all pending articles within 4 hours
+
+6. Features & User Stories
+6.1 User Authentication & Authorization
+Provides secure sign-up, login, and logout with JWT-based session management. Implements role-based access control (RBAC) with three roles: Admin, Author, and Reader.
+
+User Story ID
+As a…
+I want to…
+So that…
+US-001
+Visitor
+Sign up with email & password
+I can access registered features
+US-002
+Registered User
+Log in securely
+I can access my dashboard
+US-003
+Admin
+Assign/revoke author roles
+I control who can publish
+US-004
+User
+Reset my password via email
+I can regain account access
+US-005
+System
+Invalidate JWT on logout
+Sessions are secure
+
+6.2 News Management
+Authors can create, edit, and delete their own articles using a rich-text editor. Articles support image uploads, tags, and category assignment. Admins can manage all articles.
+
+User Story ID
+As a…
+I want to…
+So that…
+US-006
+Author
+Create a new article with rich text
+I can publish formatted content
+US-007
+Author
+Upload a cover image for my article
+My article is visually appealing
+US-008
+Author
+Edit my published article
+I can correct errors post-publish
+US-009
+Author
+Delete my own draft or article
+I control my content
+US-010
+Admin
+Edit or delete any article
+I maintain content quality
+
+6.3 News Search & Filter
+A powerful discovery system allowing users to search by keyword and filter results by category, date range, and author. Results are paginated for performance.
+
+User Story ID
+As a…
+I want to…
+So that…
+US-011
+Reader
+Search articles by keyword
+I find relevant news quickly
+US-012
+Reader
+Filter articles by category
+I browse only my interests
+US-013
+Reader
+Filter articles by date range
+I access historical or recent news
+US-014
+Reader
+Sort results by latest or trending
+I see most relevant results first
+
+6.4 Categories Management
+Admins manage the taxonomy of the portal. Categories are used for filtering, navigation menus, and SEO slug generation.
+
+User Story ID
+As a…
+I want to…
+So that…
+US-015
+Admin
+Create a new category with name and slug
+Content is organized correctly
+US-016
+Admin
+Edit an existing category
+I correct naming or slugs
+US-017
+Admin
+Delete an unused category
+The taxonomy stays clean
+US-018
+Author
+Assign a category to my article
+Readers can discover it by topic
+
+6.5 User Posting & Admin Approval Workflow
+Registered users (Authors) submit articles that enter a Pending Review state. Admins receive notifications and can Approve or Reject with feedback. Only approved articles are publicly visible.
+
+User Story ID
+As a…
+I want to…
+So that…
+US-019
+Author
+Submit my article for review
+It can be considered for publishing
+US-020
+Admin
+View all pending articles in a queue
+I can process them efficiently
+US-021
+Admin
+Approve an article and publish it
+It becomes publicly visible
+US-022
+Admin
+Reject an article with a reason
+The author can improve and resubmit
+US-023
+Author
+See the status of my submissions
+I know if my content is live
+
+6.6 Comments System (Optional — Phase 2)
+Registered users can comment on published articles. Comments support threading (one level of replies). Admins and article authors can delete any comment.
+
+User Story ID
+As a…
+I want to…
+So that…
+US-024
+Reader
+Post a comment on an article
+I can share my opinion
+US-025
+Reader
+Reply to an existing comment
+I can engage in discussion
+US-026
+Author
+Delete comments on my article
+I remove inappropriate content
+US-027
+Admin
+Delete any comment globally
+I enforce community guidelines
+
+6.7 Responsive UI & Accessibility
+Mobile-first design using a CSS utility framework (Tailwind CSS recommended).
+Fluid grid layout adapting to 320px – 2560px viewport widths.
+Keyboard navigability and ARIA labels for screen reader support.
+Dark mode toggle (Phase 2).
+
+7. Functional Requirements
+7.1 Authentication Module
+FR-001: System shall support email/password registration with bcrypt hashing (minimum 12 salt rounds).
+FR-002: System shall issue JWT access tokens (15-min expiry) and refresh tokens (7-day expiry) on successful login.
+FR-003: System shall validate email uniqueness at registration time.
+FR-004: System shall enforce password policy: minimum 8 characters, at least one uppercase, one number.
+FR-005: System shall blacklist refresh tokens on logout.
+
+7.2 Article Module
+FR-006: System shall support a WYSIWYG rich-text editor (Quill.js or TipTap) with bold, italic, headings, links, and lists.
+FR-007: System shall accept image uploads up to 5 MB in JPEG, PNG, and WebP formats.
+FR-008: System shall auto-generate SEO-friendly slugs from article titles (e.g., 'My Great Article' → 'my-great-article').
+FR-009: System shall support draft, pending, published, and rejected article statuses.
+FR-010: System shall record createdAt and updatedAt timestamps for every article.
+
+7.3 Search & Filter Module
+FR-011: System shall implement full-text search on article title and body using MongoDB Atlas Search or a text index.
+FR-012: System shall support compound filtering: category + date range + keyword simultaneously.
+FR-013: System shall paginate results with configurable page size (default 10, max 50).
+FR-014: System shall return search results within 500ms for indexed queries.
+
+7.4 Category Module
+FR-015: System shall enforce unique category slugs.
+FR-016: System shall prevent deletion of a category that has articles assigned to it (return 409 Conflict).
+FR-017: System shall display article counts per category in the admin panel.
+
+7.5 Approval Workflow
+FR-018: Submitted articles shall enter 'pending' status automatically.
+FR-019: Admin approval shall trigger a status change to 'published' and make the article publicly visible.
+FR-020: Admin rejection shall store a rejection reason string and notify the author (in-app notification, Phase 2 email).
+FR-021: Authors may resubmit a rejected article after editing.
+
+8. Non-Functional Requirements
+Category
+Requirement
+Target / Metric
+Performance
+API response time (p95)
+< 300 ms
+Performance
+Frontend First Contentful Paint (FCP)
+< 1.8 s on 4G
+Performance
+Largest Contentful Paint (LCP)
+< 2.5 s
+Scalability
+Concurrent users supported (initial)
+2,000 concurrent
+Availability
+System uptime SLA
+99.5% monthly
+Security
+Data in transit encryption
+TLS 1.2+ (HTTPS)
+Security
+Password storage
+bcrypt, 12+ rounds
+Security
+API rate limiting
+100 req / 15 min per IP
+SEO
+Semantic HTML & meta tags
+OG tags on every article
+SEO
+Sitemap generation
+Auto-generated XML sitemap
+Accessibility
+WCAG compliance
+Level AA
+Maintainability
+Test coverage
+≥ 70% unit test coverage
+Browser Support
+Minimum browser versions
+Chrome 90+, Safari 14+, Firefox 90+
+
+9. System Architecture (High-Level)
+The application follows a three-tier architecture with a decoupled frontend SPA, a RESTful API backend, and a document database. A CDN layer caches static assets and images globally.
+
+Architecture Pattern
+Client-Server (SPA + REST API) with a CDN edge layer. The backend is stateless, enabling horizontal scaling via container orchestration (Docker + optional Kubernetes in production).
+
+9.1 Component Overview
+Layer
+Technology
+Responsibility
+Client (Frontend)
+React.js + Vite + React Router + TanStack Query
+SPA rendering, routing, state management, API calls
+API Server
+Node.js + Express.js
+Business logic, authentication, file handling, REST endpoints
+Database
+MongoDB (Atlas or self-hosted)
+Persistent storage: users, articles, categories, comments
+File Storage
+Cloudinary / AWS S3
+Image and media asset storage with CDN delivery
+Cache
+Redis (optional Phase 2)
+Session caching, search result caching
+Auth
+JWT (access + refresh tokens)
+Stateless authentication with refresh rotation
+Email
+SendGrid / Nodemailer + SMTP
+Password reset, approval notification emails
+CDN
+Cloudflare / Vercel Edge
+Static asset caching, DDoS protection, HTTPS termination
+
+9.2 Data Flow — Article Submission
+Author creates/edits article in React rich-text editor and clicks Submit.
+React frontend POSTs to POST /api/articles with JWT Authorization header.
+Express middleware validates JWT, checks Author role, sanitizes body.
+Article document is saved to MongoDB with status: 'pending'.
+Admin dashboard polls/receives notification of new pending article.
+Admin approves → PATCH /api/articles/:id/approve → status: 'published'.
+Article becomes publicly accessible via GET /api/articles/:slug.
+
+10. API Design
+All API endpoints follow RESTful conventions. Base URL: /api/v1. Authentication is via Bearer JWT tokens in the Authorization header. All responses are in JSON.
+
+10.1 Auth Endpoints
+Method
+Endpoint
+Auth
+Description
+POST
+/auth/register
+Public
+Register a new user account
+POST
+/auth/login
+Public
+Login and receive access + refresh tokens
+POST
+/auth/logout
+User
+Invalidate refresh token
+POST
+/auth/refresh
+Public (RT)
+Issue new access token using refresh token
+POST
+/auth/forgot-password
+Public
+Send password reset email
+POST
+/auth/reset-password
+Public (token)
+Reset password using email token
+
+10.2 Article Endpoints
+Method
+Endpoint
+Auth
+Description
+GET
+/articles
+Public
+List published articles (paginated, filterable)
+GET
+/articles/:slug
+Public
+Get single article by slug
+POST
+/articles
+Author
+Create a new article (status: draft or pending)
+PATCH
+/articles/:id
+Author / Admin
+Update article fields
+DELETE
+/articles/:id
+Author (own) / Admin
+Delete article
+PATCH
+/articles/:id/submit
+Author
+Submit article for admin review
+PATCH
+/articles/:id/approve
+Admin
+Approve and publish article
+PATCH
+/articles/:id/reject
+Admin
+Reject article with reason
+GET
+/articles/pending
+Admin
+List all pending articles
+
+10.3 Category Endpoints
+Method
+Endpoint
+Auth
+Description
+GET
+/categories
+Public
+List all categories
+POST
+/categories
+Admin
+Create a new category
+PATCH
+/categories/:id
+Admin
+Update category name or slug
+DELETE
+/categories/:id
+Admin
+Delete category (if no articles linked)
+
+10.4 User Endpoints
+Method
+Endpoint
+Auth
+Description
+GET
+/users/me
+User
+Get current user profile
+PATCH
+/users/me
+User
+Update profile (name, avatar)
+GET
+/users
+Admin
+List all users (paginated)
+PATCH
+/users/:id/role
+Admin
+Assign role (reader / author / admin)
+
+10.5 Comments Endpoints (Phase 2)
+Method
+Endpoint
+Auth
+Description
+GET
+/articles/:id/comments
+Public
+Get all comments for an article
+POST
+/articles/:id/comments
+User
+Add a comment to an article
+DELETE
+/comments/:id
+Author (article) / Admin
+Delete a comment
+
+11. Database Schema
+MongoDB is selected as the primary datastore due to its flexible document model, native JSON support, and excellent Node.js driver ecosystem. The following collections are defined:
+
+11.1 users Collection
+Field
+Type
+Constraints / Notes
+_id
+ObjectId
+Primary key (auto)
+name
+String
+Required, max 100 chars
+email
+String
+Required, unique, lowercase
+passwordHash
+String
+bcrypt hash, never returned in responses
+role
+String (enum)
+'reader' | 'author' | 'admin', default: 'reader'
+avatar
+String
+URL to Cloudinary image
+isVerified
+Boolean
+Email verification flag, default: false
+refreshTokens
+String[]
+Array of active refresh token hashes
+createdAt
+Date
+Auto
+updatedAt
+Date
+Auto
+
+11.2 articles Collection
+Field
+Type
+Constraints / Notes
+_id
+ObjectId
+Primary key (auto)
+title
+String
+Required, max 200 chars, text-indexed
+slug
+String
+Unique, auto-generated from title
+body
+String
+HTML from rich-text editor, text-indexed
+summary
+String
+Max 300 chars, used for meta description
+coverImage
+String
+Cloudinary URL
+author
+ObjectId (ref: users)
+Required
+category
+ObjectId (ref: categories)
+Required
+tags
+String[]
+Optional keyword tags
+status
+String (enum)
+'draft' | 'pending' | 'published' | 'rejected'
+rejectionReason
+String
+Populated on rejection
+views
+Number
+Incremented on each GET, default: 0
+metaTitle
+String
+SEO meta title, defaults to title
+metaDesc
+String
+SEO meta description, defaults to summary
+publishedAt
+Date
+Set on approval
+createdAt
+Date
+Auto
+updatedAt
+Date
+Auto
+
+11.3 categories Collection
+Field
+Type
+Constraints / Notes
+_id
+ObjectId
+Primary key (auto)
+name
+String
+Required, unique, max 60 chars
+slug
+String
+Unique, URL-safe (e.g., 'sports-news')
+description
+String
+Optional, max 200 chars
+createdAt
+Date
+Auto
+
+11.4 comments Collection (Phase 2)
+Field
+Type
+Constraints / Notes
+_id
+ObjectId
+Primary key (auto)
+article
+ObjectId (ref: articles)
+Required
+author
+ObjectId (ref: users)
+Required
+body
+String
+Required, max 1000 chars, plain text
+parentComment
+ObjectId (ref: comments)
+For threaded replies, nullable
+createdAt
+Date
+Auto
+
+11.5 Recommended Indexes
+articles: { slug: 1 } — unique, for slug-based lookups
+articles: { status: 1, publishedAt: -1 } — compound index for public article listing
+articles: { category: 1, status: 1 } — for category page queries
+articles: { title: 'text', body: 'text' } — full-text search index
+users: { email: 1 } — unique index for auth lookups
+comments: { article: 1, createdAt: -1 } — for comment threads
+
+12. UI/UX Guidelines
+12.1 Design Principles
+Content First: Article text and imagery dominate the visual hierarchy.
+Progressive Disclosure: Complex admin features are hidden from readers via role-gated routes.
+Consistency: Shared component library (buttons, inputs, cards) ensures visual cohesion.
+Speed Perception: Skeleton loaders replace spinners for perceived faster loading.
+
+12.2 Color Palette
+Token
+Hex Value
+Usage
+Primary
+#1A3C5E
+Headlines, nav bar background, CTA buttons
+Accent
+#2E86AB
+Links, active states, highlights
+Danger / Alert
+#E84855
+Error states, rejection badges
+Background
+#F9FAFB
+Page background
+Surface
+#FFFFFF
+Cards, modals, panels
+Text Primary
+#1E1E2E
+Body copy
+Text Muted
+#6B7280
+Meta info: date, author, tags
+
+12.3 Typography
+Headings: Inter or Playfair Display — bold, high contrast.
+Body: Inter or Source Serif Pro — 16px base, 1.6 line-height for readability.
+Code / Monospace: Fira Code for any inline code blocks in articles.
+
+12.4 Key Page Layouts
+Page
+Key UI Elements
+Homepage
+Hero banner, featured article cards (3-col grid desktop / 1-col mobile), category pills, infinite scroll or pagination
+Article Detail Page
+Cover image (full-width), title, meta (author + date + category), rich body, social share buttons, comments section, related articles
+Author Dashboard
+Article list with status badges (Draft / Pending / Published / Rejected), Create New button, submission queue
+Admin Panel
+Sidebar nav: Users | Articles | Categories | Pending Queue | Analytics. Data tables with action buttons.
+Search Results
+Search bar (sticky), filter sidebar (category, date), results grid with article cards and highlighted keywords
+
+12.5 Responsive Breakpoints
+Breakpoint
+Width
+Layout
+Mobile (sm)
+< 640px
+Single column, hamburger nav, bottom tab bar
+Tablet (md)
+640–1024px
+Two column grid, collapsible sidebar
+Desktop (lg)
+1024–1440px
+Three column grid, persistent sidebar
+Wide (xl)
+> 1440px
+Max-width container 1280px centered
+
+13. Success Metrics
+Metric
+Definition
+Target (6 months)
+Monthly Active Users (MAU)
+Unique authenticated sessions per month
+2,000+
+Registered Authors
+Users with 'author' role who have published ≥ 1 article
+50+
+Articles Published
+Total approved and published articles
+500+
+Avg. Session Duration
+Average time a reader spends per visit
+> 3 minutes
+Search Usage Rate
+% of sessions that use search or filter
+> 40%
+Approval Turnaround
+Median time from submission to admin decision
+< 8 hours
+Core Web Vitals — LCP
+Largest Contentful Paint on mobile
+< 2.5 s
+Core Web Vitals — CLS
+Cumulative Layout Shift score
+< 0.1
+API Uptime
+Monthly availability of the backend API
+≥ 99.5%
+Bounce Rate
+Single-page sessions / total sessions
+< 55%
+
+14. Future Scope
+Phase 2 (Months 4–8)
+Comments System: Threaded comments with author moderation and admin oversight.
+Email Notifications: SendGrid-powered emails for approval outcomes, comment replies.
+Dark Mode: User-toggled dark/light theme persisted in localStorage.
+Social Authentication: OAuth 2.0 login via Google and GitHub.
+Bookmark / Reading List: Registered users save articles for later reading.
+
+Phase 3 (Months 9–14)
+Analytics Dashboard: Admin-facing charts for article views, user growth, and category trends using Chart.js or Recharts.
+Newsletter Integration: Email digest of top articles via Mailchimp/SendGrid.
+Progressive Web App (PWA): Offline reading support and home screen installation.
+Multi-language Support (i18n): Hindi and regional language article support.
+Monetization: Ad slot management and sponsored article tagging.
+
+Phase 4 (Months 15+)
+Recommendation Engine: ML-based 'You May Also Like' personalization using collaborative filtering.
+Mobile Apps: React Native iOS and Android applications sharing the same API.
+Federated Search: Integration with external news APIs (NewsAPI, RSS feeds) for aggregated content.
+Video Article Support: Embedded video with thumbnail and transcript generation.
+
+15. Assumptions & Risks
+15.1 Assumptions
+The application will be deployed to a cloud provider (AWS, GCP, or Azure) with managed MongoDB Atlas.
+Image storage will use Cloudinary free tier initially, upgrading on volume growth.
+All admin users will be manually seeded during initial deployment.
+English will be the sole supported language for Phase 1.
+
+15.2 Risk Register
+Risk
+Likelihood
+Impact
+Mitigation
+Spam article submissions overloading admin queue
+Medium
+High
+Implement author reputation score and automated spam filter
+Image upload abuse (inappropriate content)
+Medium
+High
+Cloudinary AI moderation + admin review before publish
+JWT token theft via XSS
+Low
+Critical
+HttpOnly cookies for refresh tokens, CSP headers, input sanitization
+MongoDB Atlas cost overrun at scale
+Low
+Medium
+Monitor usage with Atlas alerts, add caching layer early
+Low author adoption rate
+Medium
+High
+Streamline editor UX, provide author onboarding guide and incentives
+
+16. Appendix
+A. Recommended Tech Stack Summary
+Layer
+Recommended Tool
+Rationale
+Frontend Framework
+React.js 18 + Vite
+Fast HMR, RSC-ready, massive ecosystem
+State Management
+TanStack Query (React Query)
+Server-state caching, pagination, background refetch
+Styling
+Tailwind CSS
+Utility-first, zero unused CSS in production build
+Rich Text Editor
+TipTap (ProseMirror-based)
+Extensible, headless, React-native, active community
+Backend Framework
+Express.js 5
+Lightweight, mature, excellent middleware ecosystem
+ORM / ODM
+Mongoose 8
+Schema validation, middleware hooks, population
+Authentication
+JWT + bcryptjs
+Stateless, secure, no server-side session storage
+File Upload
+Multer + Cloudinary SDK
+Multipart parsing + cloud CDN delivery
+Validation
+Zod (backend + frontend)
+Type-safe schema validation, single source of truth
+Testing
+Vitest + Supertest + Playwright
+Unit, integration, and E2E coverage
+CI/CD
+GitHub Actions
+Automated test, build, and deployment pipelines
+Deployment
+Vercel (frontend) + Railway/Render (backend)
+Zero-config deployments with free tiers
+
+B. Document Revision History
+Version
+Date
+Author
+Changes
+0.1
+April 1, 2026
+Product Team
+Initial draft
+1.0
+April 15, 2026
+Product Team
+Full PRD — baseline for development
+
+
+End of Document
