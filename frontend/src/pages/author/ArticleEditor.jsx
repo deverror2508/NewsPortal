@@ -9,6 +9,7 @@ import ReactQuill from 'react-quill-new';
 import Select from 'react-select';
 import 'react-quill-new/dist/quill.snow.css';
 import { articlesAPI, categoriesAPI } from '../../api';
+import { useAuth } from '../../context/AuthContext';
 
 const API_URL = 'http://localhost:5000';
 
@@ -51,6 +52,8 @@ const Section = ({ icon: Icon, label, children }) => (
 const ArticleEditor = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const isAdmin = user?.role === 'admin';
   const fileInputRef  = useRef(null);
   const videoInputRef = useRef(null);
 
@@ -73,12 +76,23 @@ const ArticleEditor = () => {
   const [toast,      setToast]      = useState(null);
   const [lastSaved,  setLastSaved]  = useState(null);
 
+  const [wordCount, setWordCount] = useState(0);
+  const [readTime, setReadTime] = useState(1);
+
   const isEditing = !!id;
 
   useEffect(() => {
     fetchCategories();
     if (id) fetchArticle();
   }, [id]);
+
+  // Calculate stats in real-time
+  useEffect(() => {
+    const text = body.replace(/<[^>]*>/g, ' ').trim();
+    const words = text ? text.split(/\s+/).length : 0;
+    setWordCount(words);
+    setReadTime(Math.max(1, Math.ceil(words / 200)));
+  }, [body]);
 
   const fetchCategories = async () => {
     try {
@@ -141,7 +155,7 @@ const ArticleEditor = () => {
   };
 
   /* ── Save ── */
-  const handleSave = async (submitForReview = false) => {
+  const handleSave = async (submitOrPublish = false) => {
     if (!title.trim())  { showToast('Title is required', 'error');           return; }
     if (!body.trim())   { showToast('Article body is required', 'error');    return; }
     if (!categoryId)    { showToast('Please select a category', 'error');    return; }
@@ -153,7 +167,12 @@ const ArticleEditor = () => {
       fd.append('body',     body);
       fd.append('summary',  summary);
       fd.append('category', categoryId);
-      fd.append('status',   submitForReview ? 'pending' : 'draft');
+      
+      const targetStatus = submitOrPublish 
+        ? (isAdmin ? 'published' : 'pending')
+        : 'draft';
+      
+      fd.append('status', targetStatus);
 
       tags.split(',').map(t => t.trim()).filter(Boolean)
           .forEach(t => fd.append('tags[]', t));
@@ -164,16 +183,14 @@ const ArticleEditor = () => {
 
       if (isEditing) {
         await articlesAPI.update(id, fd);
-        if (submitForReview) await articlesAPI.submitForReview(id);
       } else {
-        const res   = await articlesAPI.create(fd);
-        const newId = res.data.data._id;
-        if (submitForReview) await articlesAPI.submitForReview(newId);
-        navigate(`/editor/${newId}`, { replace: true });
+        await articlesAPI.create(fd);
       }
 
       setLastSaved(new Date());
-      showToast(submitForReview ? 'Submitted for review!' : 'Draft saved!', 'success');
+      showToast(submitOrPublish 
+        ? (isAdmin ? 'Article Published!' : 'Submitted for review!') 
+        : 'Draft saved!', 'success');
       
       const redirectPath = window.location.pathname.startsWith('/admin') ? '/admin/posts' : '/dashboard';
       setTimeout(() => navigate(redirectPath), 1500);
@@ -209,13 +226,25 @@ const ArticleEditor = () => {
       )}
 
       {/* ── Gradient header ── */}
-      <div className="editor-header animate-slide">
-        <div className="editor-header-badge">
-          <FiEdit3 size={11} />
-          {isEditing ? 'Editing Article' : 'New Article'}
+      <div className="editor-header animate-slide" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+        <div>
+          <div className="editor-header-badge">
+            <FiEdit3 size={11} />
+            {isEditing ? 'Editing Article' : 'New Article'}
+          </div>
+          <h1>{isEditing ? 'Edit Article' : 'Create New Article'}</h1>
+          <p>{isAdmin ? 'Publish directly or save as draft.' : 'Fill in the details below and submit for review when ready.'}</p>
         </div>
-        <h1>{isEditing ? 'Edit Your Article' : 'Create New Article'}</h1>
-        <p>Fill in the details below and submit for review when ready.</p>
+        
+        <div style={{ display: 'flex', gap: '20px', alignItems: 'center', background: 'rgba(255,255,255,0.1)', padding: '12px 20px', borderRadius: '16px', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.2)' }}>
+          <div style={{ textAlign: 'right' }}>
+            <div style={{ fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', opacity: 0.7, letterSpacing: '0.05em' }}>Author Session</div>
+            <div style={{ fontSize: '14px', fontWeight: 700 }}>{user?.name}</div>
+          </div>
+          <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'white', color: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800 }}>
+            {user?.name?.charAt(0)}
+          </div>
+        </div>
       </div>
 
       {/* ── SECTION 1: Media ── */}
@@ -345,10 +374,20 @@ const ArticleEditor = () => {
         </div>
 
         {/* Body */}
-        <div className="form-group">
-          <label className="form-label">
-            Article Body <span style={{ color: 'var(--danger)' }}>*</span>
-          </label>
+        <div className="form-group" style={{ marginBottom: 0 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '8px' }}>
+            <label className="form-label" style={{ marginBottom: 0 }}>
+              Article Body <span style={{ color: 'var(--danger)' }}>*</span>
+            </label>
+            <div style={{ display: 'flex', gap: '16px', fontSize: '12px', fontWeight: 700, color: 'var(--text-light)' }}>
+              <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <FiAlignLeft size={13} /> {wordCount} Words
+              </span>
+              <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <FiClock size={13} /> ~{readTime} Min Read
+              </span>
+            </div>
+          </div>
           <ReactQuill
             theme="snow"
             value={body}
@@ -480,7 +519,8 @@ const ArticleEditor = () => {
               disabled={saving}
               style={{ minWidth: 170 }}
             >
-              <FiSend size={14} className={saving ? "spin-icon" : ""} /> {saving ? 'Submitting…' : 'Submit for Review'}
+              <FiSend size={14} className={saving ? "spin-icon" : ""} /> 
+              {saving ? 'Processing…' : (isAdmin ? 'Publish Article' : 'Submit for Review')}
             </button>
           </div>
         </div>
@@ -488,5 +528,6 @@ const ArticleEditor = () => {
     </div>
   );
 };
+
 
 export default ArticleEditor;

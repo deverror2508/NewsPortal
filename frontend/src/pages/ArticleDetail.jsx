@@ -60,8 +60,12 @@ const ArticleDetail = () => {
     );
   }
 
-  const coverImage = article.coverImage ? `${API_URL}${article.coverImage}` : null;
-  const videoUrl   = article.videoUrl   ? `${API_URL}${article.videoUrl}`   : null;
+  const coverImage = article.coverImage 
+    ? (article.coverImage.startsWith('http') ? article.coverImage : `${API_URL}${article.coverImage}`) 
+    : null;
+  const videoUrl   = article.videoUrl 
+    ? (article.videoUrl.startsWith('http') ? article.videoUrl : `${API_URL}${article.videoUrl}`) 
+    : null;
 
   return (
     <article className="article-detail">
@@ -99,7 +103,34 @@ const ArticleDetail = () => {
       </div>
 
       {coverImage && (
-        <img src={coverImage} alt={article.title} className="article-detail-cover" />
+        <div style={{ position: 'relative', marginBottom: 40 }}>
+          <img 
+            src={coverImage} 
+            alt={article.title} 
+            className="article-detail-cover" 
+            style={{ display: 'block' }}
+            onError={(e) => {
+              e.target.style.display = 'none';
+              e.target.nextSibling.style.display = 'flex';
+            }}
+          />
+          <div
+            className="article-detail-cover"
+            style={{
+              display: 'none',
+              background: `linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%)`,
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: 'white',
+              fontSize: '80px',
+              height: '400px',
+              fontFamily: 'var(--font-display)',
+              fontWeight: 800,
+            }}
+          >
+            {article.title?.charAt(0)}
+          </div>
+        </div>
       )}
 
       {/* ── Embedded Video ── */}
@@ -107,16 +138,17 @@ const ArticleDetail = () => {
         <div
           style={{
             margin: '28px 0',
-            borderRadius: 12,
+            borderRadius: 20,
             overflow: 'hidden',
             background: '#000',
-            boxShadow: '0 4px 24px rgba(0,0,0,0.18)',
+            boxShadow: '0 10px 40px rgba(0,0,0,0.2)',
           }}
         >
           <video
+            key={videoUrl}
             controls
             preload="metadata"
-            style={{ width: '100%', maxHeight: 480, display: 'block' }}
+            style={{ width: '100%', maxHeight: 600, display: 'block' }}
           >
             <source src={videoUrl} type="video/mp4" />
             <source src={videoUrl} type="video/webm" />

@@ -2,9 +2,11 @@ import { useState, useEffect } from 'react';
 import { Routes, Route, NavLink, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import {
   FiHome, FiFileText, FiUsers, FiSettings, FiLogOut,
-  FiMenu, FiX, FiBell, FiChevronRight, FiUpload, FiFolder, FiSearch, FiActivity, FiZap, FiTarget, FiInfo, FiClock, FiAlertCircle, FiCheckCircle, FiTrash2
+  FiMenu, FiX, FiBell, FiChevronRight, FiUpload, FiFolder, FiSearch, FiActivity, FiZap, FiTarget, FiInfo, FiClock, FiAlertCircle, FiCheckCircle, FiTrash2, FiUserPlus
 } from 'react-icons/fi';
+import { formatDistanceToNow } from 'date-fns';
 import { useAuth } from '../../context/AuthContext';
+import { articlesAPI, usersAPI } from '../../api';
 
 // Import refactored components
 import DashboardHome from './DashboardHome';
@@ -25,13 +27,68 @@ const AdminPanel = () => {
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
 
-  // Mock notifications state
-  const [notifications, setNotifications] = useState([
-    { id: 1, type: 'info', title: 'New Article Submission', time: '2 mins ago', desc: 'John Doe submitted "The Future of Quantum Computing" for review.', unread: true },
-    { id: 2, type: 'success', title: 'New User Registered', time: '1 hour ago', desc: 'A new author "Sarah Smith" has joined the platform.', unread: true },
-    { id: 3, type: 'warning', title: 'Server Alert', time: '5 hours ago', desc: 'Storage capacity reaching 90%. Please consider upgrading.', unread: false },
-    { id: 4, type: 'danger', title: 'Article Rejected', time: 'Yesterday', desc: 'Your article "Crypto Trends" was rejected by Admin.', unread: false }
-  ]);
+  // Dynamic notifications state
+  const [notifications, setNotifications] = useState([]);
+  const [loadingNotifications, setLoadingNotifications] = useState(true);
+
+  useEffect(() => {
+    const fetchNotifications = async () => {
+      setLoadingNotifications(true);
+      try {
+        const [pendingRes, latestRes, usersRes] = await Promise.all([
+          articlesAPI.getPending(),
+          articlesAPI.getAllAdmin({ limit: 3 }), // Just top 3 for dropdown
+          usersAPI.getAll({ limit: 3 })
+        ]);
+
+        const all = [];
+
+        // Add pending submissions
+        pendingRes.data.data.forEach(a => {
+          all.push({
+            id: `p-${a._id}`,
+            type: 'warning',
+            title: 'Action Required',
+            time: formatDistanceToNow(new Date(a.createdAt), { addSuffix: true }),
+            desc: `"${a.title}" is waiting for review.`,
+            unread: true
+          });
+        });
+
+        // Add recently published
+        latestRes.data.data.filter(a => a.status === 'published').forEach(a => {
+          all.push({
+            id: `pub-${a._id}`,
+            type: 'success',
+            title: 'Article Published',
+            time: formatDistanceToNow(new Date(a.createdAt), { addSuffix: true }),
+            desc: `"${a.title}" has been published.`,
+            unread: false
+          });
+        });
+
+        // Add new users
+        usersRes.data.data.forEach(u => {
+          all.push({
+            id: `u-${u._id}`,
+            type: 'info',
+            title: 'New Member',
+            time: formatDistanceToNow(new Date(u.createdAt), { addSuffix: true }),
+            desc: `${u.name} has joined the portal.`,
+            unread: false
+          });
+        });
+
+        // Sort by most recent (this is a bit rough since we don't have a single timestamp yet)
+        setNotifications(all.slice(0, 5)); // Keep only top 5
+      } catch (err) {
+        console.error('Failed to load notifications', err);
+      }
+      setLoadingNotifications(false);
+    };
+
+    if (user) fetchNotifications();
+  }, [location.pathname]); // Refresh when navigating
 
   const clearNotifications = () => {
     setNotifications([]);
@@ -69,6 +126,7 @@ const AdminPanel = () => {
     switch (type) {
       case 'success': return <FiCheckCircle style={{ color: '#10b881' }} />;
       case 'warning': return <FiAlertCircle style={{ color: '#f59e0b' }} />;
+      case 'info': return <FiUserPlus style={{ color: '#3b82f6' }} />;
       default: return <FiInfo style={{ color: '#3b82f6' }} />;
     }
   };
@@ -86,7 +144,7 @@ const AdminPanel = () => {
           <div className="brand-icon-box">
             <FiZap size={24} />
           </div>
-          <span className="brand-name-saas">MEDNEXT</span>
+          <span className="brand-name-saas">NewsPortal</span>
         </div>
 
         <nav className="admin-nav custom-scrollbar">
@@ -150,7 +208,7 @@ const AdminPanel = () => {
                 onClick={() => { setNotificationsOpen(!notificationsOpen); setProfileOpen(false); }}
               >
                 <FiBell />
-                <span className="notification-dot"></span>
+                {notifications.some(n => n.unread) && <span className="notification-dot"></span>}
               </button>
 
               {notificationsOpen && (
@@ -158,18 +216,22 @@ const AdminPanel = () => {
                   <div style={{ padding: '24px', borderBottom: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                       <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 900, color: '#0f172a' }}>Notifications</h3>
-                      <span style={{ background: '#3b82f6', color: 'white', fontSize: '10px', padding: '2px 8px', borderRadius: '10px', fontWeight: 800 }}>
-                        {notifications.length} NEW
-                      </span>
+                      {notifications.length > 0 && (
+                        <span style={{ background: '#3b82f6', color: 'white', fontSize: '10px', padding: '2px 8px', borderRadius: '10px', fontWeight: 800 }}>
+                          {notifications.length} NEW
+                        </span>
+                      )}
                     </div>
                     <button onClick={clearNotifications} style={{ background: 'none', border: 'none', color: '#3b82f6', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }}>Clear All</button>
                   </div>
                   <div className="custom-scrollbar" style={{ maxHeight: '450px', overflowY: 'auto' }}>
-                    {notifications.length > 0 ? (
+                    {loadingNotifications ? (
+                      <div style={{ padding: '40px', textAlign: 'center' }}><div className="spinner" style={{ margin: '0 auto' }}></div></div>
+                    ) : notifications.length > 0 ? (
                       <div className="notification-list">
                         {notifications.map(n => (
                           <div key={n.id} className={`notification-item ${n.unread ? 'unread' : ''}`}>
-                            <div className={`notification-icon-wrap text-${n.type === 'info' ? 'primary' : n.type === 'success' ? 'success' : n.type === 'warning' ? 'warning' : 'danger'}`}>
+                            <div className="notification-icon-wrap">
                               {getIcon(n.type)}
                             </div>
                             <div className="notification-content">
@@ -183,12 +245,7 @@ const AdminPanel = () => {
                                   {n.time}
                                 </span>
                               </div>
-                              <p className="notification-message">{n.message || n.desc || 'New event received in the system.'}</p>
-                            </div>
-                            <div className="notification-actions">
-                              <button className="btn-icon" title="Delete Notification" onClick={(e) => { e.stopPropagation(); /* delete logic */ }}>
-                                <FiTrash2 size={16} />
-                              </button>
+                              <p className="notification-message">{n.desc}</p>
                             </div>
                           </div>
                         ))}
@@ -203,7 +260,7 @@ const AdminPanel = () => {
                       </div>
                     )}
                   </div>
-                  <NavLink to="/admin/notifications" style={{ display: 'block', padding: '18px', textAlign: 'center', fontSize: '13px', fontWeight: 800, color: '#3b82f6', textDecoration: 'none', background: '#f8fafc', borderTop: '1px solid #f1f5f9' }}>
+                  <NavLink to="/admin/notifications" onClick={() => setNotificationsOpen(false)} style={{ display: 'block', padding: '18px', textAlign: 'center', fontSize: '13px', fontWeight: 800, color: '#3b82f6', textDecoration: 'none', background: '#f8fafc', borderTop: '1px solid #f1f5f9' }}>
                     View All Notifications
                   </NavLink>
                 </div>
@@ -227,7 +284,7 @@ const AdminPanel = () => {
 
               {profileOpen && (
                 <div className="dropdown-panel animate-slideUp" style={{ right: 0, width: '220px' }}>
-                  <NavLink to="/admin/settings" className="dropdown-item">
+                  <NavLink to="/admin/settings" className="dropdown-item" onClick={() => setProfileOpen(false)}>
                     <FiSettings /> Account Settings
                   </NavLink>
                   <button onClick={handleLogout} className="dropdown-item logout" style={{ width: '100%', border: 'none', background: 'none', cursor: 'pointer', textAlign: 'left' }}>
@@ -259,3 +316,4 @@ const AdminPanel = () => {
 };
 
 export default AdminPanel;
+
