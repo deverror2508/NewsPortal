@@ -103,4 +103,11 @@ export const usersAPI = {
   delete: (id) => api.delete(`/users/${id}`),
 };
 
+// ========== NOTIFICATIONS API ==========
+export const notificationsAPI = {
+  getNotifications: () => api.get('/notifications'),
+  markAsRead: (id) => api.patch(`/notifications/${id}/read`),
+  markAllAsRead: () => api.patch('/notifications/read-all'),
+};
+
 export default api;

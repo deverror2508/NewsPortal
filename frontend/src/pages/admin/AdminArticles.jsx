@@ -149,7 +149,7 @@ const AdminArticles = () => {
             
             {/* Modal Body */}
             <div style={{ padding: '40px' }}>
-              {/* Author & Meta */}
+              {/* ── Meta & Author ── */}
               <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '32px', background: '#f8fafc', padding: '16px 24px', borderRadius: '16px', border: '1px solid #f1f5f9' }}>
                 <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'linear-gradient(135deg, #3b82f6, #1d4ed8)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: '18px', boxShadow: '0 4px 12px rgba(59, 130, 246, 0.3)' }}>
                   {viewingArticle.author?.name?.charAt(0)}
@@ -166,9 +166,9 @@ const AdminArticles = () => {
                 </div>
               </div>
 
-              {/* Cover Image */}
+              {/* ── Featured Image ── */}
               {viewingArticle.coverImage && (
-                <div style={{ width: '100%', marginBottom: '40px', borderRadius: '20px', overflow: 'hidden', boxShadow: '0 10px 30px rgba(0,0,0,0.1)', border: '1px solid #f1f5f9' }}>
+                <div style={{ width: '100%', marginBottom: '32px', borderRadius: '20px', overflow: 'hidden', boxShadow: '0 10px 30px rgba(0,0,0,0.1)', border: '1px solid #f1f5f9' }}>
                   <img 
                     src={viewingArticle.coverImage.startsWith('http') ? viewingArticle.coverImage : `http://localhost:5000${viewingArticle.coverImage}`} 
                     style={{ width: '100%', height: 'auto', maxHeight: '500px', objectFit: 'cover', display: 'block' }} 
@@ -178,13 +178,26 @@ const AdminArticles = () => {
                 </div>
               )}
 
-              {/* Summary */}
-              <div style={{ background: '#f0f9ff', padding: '24px 32px', borderRadius: '16px', borderLeft: '5px solid #0ea5e9', marginBottom: '40px' }}>
-                <h4 style={{ fontSize: '12px', fontWeight: 800, color: '#0369a1', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '8px' }}>Executive Summary</h4>
-                <p style={{ fontSize: '16px', color: '#0c4a6e', lineHeight: '1.6', margin: 0, fontWeight: 500 }}>{viewingArticle.summary}</p>
-              </div>
+              {/* ── 2. Content (Text) ── */}
+              {viewingArticle.summary && (
+                <div style={{ background: '#f0f9ff', padding: '24px 32px', borderRadius: '16px', borderLeft: '5px solid #0ea5e9', marginBottom: '32px' }}>
+                  <h4 style={{ fontSize: '12px', fontWeight: 800, color: '#0369a1', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '8px' }}>Executive Summary</h4>
+                  <p style={{ fontSize: '16px', color: '#0c4a6e', lineHeight: '1.6', margin: 0, fontWeight: 500 }}>{viewingArticle.summary}</p>
+                </div>
+              )}
 
-              {/* Content Body */}
+              {/* ── 3. Video ── */}
+              {viewingArticle.videoUrl && (
+                <div style={{ margin: '32px 0', borderRadius: '20px', overflow: 'hidden', background: '#000', boxShadow: '0 10px 40px rgba(0,0,0,0.2)' }}>
+                  <video 
+                    src={viewingArticle.videoUrl.startsWith('http') ? viewingArticle.videoUrl : `http://localhost:5000${viewingArticle.videoUrl}`} 
+                    controls 
+                    style={{ width: '100%', maxHeight: '500px', display: 'block' }} 
+                  />
+                </div>
+              )}
+
+              {/* ── 4. Remaining Content ── */}
               <div style={{ padding: '0 10px' }}>
                 <h4 style={{ fontSize: '12px', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '20px' }}>Article Content</h4>
                 <div 

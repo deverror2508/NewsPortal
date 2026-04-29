@@ -67,6 +67,33 @@ const ArticleDetail = () => {
     ? (article.videoUrl.startsWith('http') ? article.videoUrl : `${API_URL}${article.videoUrl}`) 
     : null;
 
+  // Split content logic for structured rendering
+  const bodyContent = article.body || '';
+  let firstPart = bodyContent;
+  let secondPart = '';
+
+  if (videoUrl && bodyContent) {
+    const pEndIndex = bodyContent.indexOf('</p>');
+    if (pEndIndex !== -1) {
+      // Split after the first paragraph
+      firstPart = bodyContent.substring(0, pEndIndex + 4);
+      secondPart = bodyContent.substring(pEndIndex + 4);
+    } else {
+      // Fallback if no paragraph tags: split at first double newline or approx 500 chars
+      const doubleNewlineIndex = bodyContent.indexOf('\n\n');
+      if (doubleNewlineIndex !== -1) {
+        firstPart = bodyContent.substring(0, doubleNewlineIndex);
+        secondPart = bodyContent.substring(doubleNewlineIndex);
+      } else if (bodyContent.length > 600) {
+        const spaceIndex = bodyContent.indexOf(' ', 500);
+        if (spaceIndex !== -1) {
+          firstPart = bodyContent.substring(0, spaceIndex);
+          secondPart = bodyContent.substring(spaceIndex);
+        }
+      }
+    }
+  }
+
   return (
     <article className="article-detail">
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
@@ -102,8 +129,9 @@ const ArticleDetail = () => {
         </span>
       </div>
 
+      {/* ── Featured Image ── */}
       {coverImage && (
-        <div style={{ position: 'relative', marginBottom: 40 }}>
+        <div style={{ position: 'relative', margin: '32px 0' }}>
           <img 
             src={coverImage} 
             alt={article.title} 
@@ -133,16 +161,23 @@ const ArticleDetail = () => {
         </div>
       )}
 
-      {/* ── Embedded Video ── */}
+      {/* ── 2. Content (Text) ── */}
+      <div
+        className="article-detail-body animate-fade"
+        dangerouslySetInnerHTML={{ __html: firstPart }}
+      />
+
+      {/* ── 3. Video ── */}
       {videoUrl && (
         <div
           style={{
-            margin: '28px 0',
+            margin: '32px 0',
             borderRadius: 20,
             overflow: 'hidden',
             background: '#000',
             boxShadow: '0 10px 40px rgba(0,0,0,0.2)',
           }}
+          className="animate-fade"
         >
           <video
             key={videoUrl}
@@ -158,10 +193,14 @@ const ArticleDetail = () => {
         </div>
       )}
 
-      <div
-        className="article-detail-body"
-        dangerouslySetInnerHTML={{ __html: article.body }}
-      />
+      {/* ── 4. Remaining Content ── */}
+      {secondPart && (
+        <div
+          className="article-detail-body animate-fade"
+          dangerouslySetInnerHTML={{ __html: secondPart }}
+          style={{ marginTop: videoUrl ? 0 : 20 }}
+        />
+      )}
 
       {/* Tags */}
       {article.tags?.length > 0 && (

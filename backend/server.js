@@ -12,6 +12,7 @@ const authRoutes = require('./routes/authRoutes');
 const articleRoutes = require('./routes/articleRoutes');
 const categoryRoutes = require('./routes/categoryRoutes');
 const userRoutes = require('./routes/userRoutes');
+const notificationRoutes = require('./routes/notificationRoutes');
 
 const app = express();
 
@@ -37,6 +38,7 @@ app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/articles', articleRoutes);
 app.use('/api/v1/categories', categoryRoutes);
 app.use('/api/v1/users', userRoutes);
+app.use('/api/v1/notifications', notificationRoutes);
 
 // Health check
 app.get('/api/v1/health', (req, res) => {

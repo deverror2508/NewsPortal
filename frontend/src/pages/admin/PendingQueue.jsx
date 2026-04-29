@@ -108,7 +108,7 @@ const PendingQueue = () => {
             </div>
             
             <div className="custom-scrollbar" style={{ flex: 1, overflowY: 'auto', padding: '32px' }}>
-              <div style={{ display: 'flex', gap: '24px', marginBottom: '32px', fontSize: '13px', fontWeight: 600, color: '#94a3b8' }}>
+              <div style={{ display: 'flex', gap: '24px', marginBottom: '24px', fontSize: '13px', fontWeight: 600, color: '#94a3b8' }}>
                 <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><FiCalendar /> {format(new Date(previewArticle.createdAt), 'MMMM do, yyyy')}</span>
                 <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><FiUser /> {previewArticle.author?.name}</span>
                 <span style={{ marginLeft: 'auto', background: '#f1f5f9', color: '#3b82f6', padding: '4px 12px', borderRadius: '8px', textTransform: 'uppercase', fontSize: '11px', fontWeight: 800 }}>{previewArticle.category?.name}</span>
@@ -116,12 +116,36 @@ const PendingQueue = () => {
 
               <h1 style={{ fontSize: '32px', fontWeight: 800, color: '#0f172a', marginBottom: '24px', lineHeight: 1.2 }}>{previewArticle.title}</h1>
               
+              {/* ── Featured Image ── */}
               {previewArticle.coverImage && (
-                <div style={{ borderRadius: '20px', overflow: 'hidden', marginBottom: '32px', border: '1px solid #e2e8f0' }}>
-                  <img src={`http://localhost:5000${previewArticle.coverImage}`} alt="" style={{ width: '100%', display: 'block' }} />
+                <div style={{ borderRadius: '20px', overflow: 'hidden', marginBottom: '32px', border: '1px solid #e2e8f0', boxShadow: '0 10px 30px rgba(0,0,0,0.05)' }}>
+                  <img 
+                    src={previewArticle.coverImage.startsWith('http') ? previewArticle.coverImage : `http://localhost:5000${previewArticle.coverImage}`} 
+                    alt="" 
+                    style={{ width: '100%', display: 'block', maxHeight: '450px', objectFit: 'cover' }} 
+                  />
                 </div>
               )}
               
+              {/* ── 2. Content (Text) ── */}
+              {previewArticle.summary && (
+                <div style={{ background: '#f8fafc', padding: '20px 24px', borderRadius: '16px', borderLeft: '4px solid #3b82f6', marginBottom: '24px' }}>
+                  <p style={{ margin: 0, fontSize: '15px', color: '#475569', lineHeight: 1.6 }}>{previewArticle.summary}</p>
+                </div>
+              )}
+
+              {/* ── 3. Video ── */}
+              {previewArticle.videoUrl && (
+                <div style={{ margin: '24px 0', borderRadius: '16px', overflow: 'hidden', background: '#000' }}>
+                  <video 
+                    src={previewArticle.videoUrl.startsWith('http') ? previewArticle.videoUrl : `http://localhost:5000${previewArticle.videoUrl}`} 
+                    controls 
+                    style={{ width: '100%', display: 'block', maxHeight: '400px' }} 
+                  />
+                </div>
+              )}
+
+              {/* ── 4. Remaining Content ── */}
               <div style={{ fontSize: '16px', lineHeight: 1.8, color: '#334155' }} dangerouslySetInnerHTML={{ __html: previewArticle.body }} />
             </div>
 
