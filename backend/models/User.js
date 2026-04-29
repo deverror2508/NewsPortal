@@ -49,6 +49,12 @@ const userSchema = new mongoose.Schema(
     },
     resetPasswordToken: String,
     resetPasswordExpire: Date,
+    readNotifications: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Article',
+      },
+    ],
   },
   {
     timestamps: true,

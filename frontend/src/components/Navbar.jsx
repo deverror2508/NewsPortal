@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate, NavLink } from 'react-router-dom';
 import { FiSearch, FiMenu, FiX, FiLogOut, FiUser, FiEdit3, FiShield } from 'react-icons/fi';
 import { useAuth } from '../context/AuthContext';
+import NotificationDropdown from './NotificationDropdown';
 
 const Navbar = () => {
   const { user, isAuthenticated, isAuthor, isAdmin, logout } = useAuth();
@@ -61,8 +62,10 @@ const Navbar = () => {
             )}
 
             {isAuthenticated ? (
-              <div style={{ position: 'relative' }}>
-                <div className="navbar-user" onClick={() => setDropdownOpen(!dropdownOpen)}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+                <NotificationDropdown />
+                <div style={{ position: 'relative' }}>
+                  <div className="navbar-user" onClick={() => setDropdownOpen(!dropdownOpen)}>
                   <div className="navbar-avatar">
                     {user.name?.charAt(0).toUpperCase()}
                   </div>
@@ -101,6 +104,7 @@ const Navbar = () => {
                     </button>
                   </div>
                 )}
+                </div>
               </div>
             ) : (
               <>

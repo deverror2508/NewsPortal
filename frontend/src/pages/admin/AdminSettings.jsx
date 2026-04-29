@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { 
   FiSettings, FiUser, FiGlobe, FiLock, FiBell, FiShield, 
-  FiSave, FiCheckCircle, FiAlertCircle 
+  FiSave, FiCheckCircle, FiAlertCircle, FiChevronRight 
 } from 'react-icons/fi';
 import { useAuth } from '../../context/AuthContext';
 import { usersAPI } from '../../api';
