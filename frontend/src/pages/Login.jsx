@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { FiMail, FiLock, FiLogIn } from 'react-icons/fi';
 import { useAuth } from '../context/AuthContext';
 
@@ -10,6 +10,8 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const [successMsg, setSuccessMsg] = useState(location.state?.message || '');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -43,6 +45,16 @@ const Login = () => {
             borderRadius: 'var(--radius-md)', marginBottom: 20, fontSize: 14
           }}>
             {error}
+          </div>
+        )}
+
+        {successMsg && (
+          <div className="toast-success" style={{
+            position: 'static', animation: 'none', padding: '12px 16px',
+            borderRadius: 'var(--radius-md)', marginBottom: 20, fontSize: 14,
+            background: '#10b88120', color: '#10b881', border: '1px solid #10b88140'
+          }}>
+            {successMsg}
           </div>
         )}
 
