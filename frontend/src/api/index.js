@@ -67,6 +67,7 @@ export const authAPI = {
   getMe: () => api.get('/auth/me'),
   forgotPassword: (data) => api.post('/auth/forgotpassword', data),
   resetPassword: (token, data) => api.put(`/auth/resetpassword/${token}`, data),
+  updatePassword: (data) => api.put('/auth/updatepassword', data),
 };
 
 // ========== ARTICLES API ==========
@@ -108,6 +109,12 @@ export const notificationsAPI = {
   getNotifications: () => api.get('/notifications'),
   markAsRead: (id) => api.patch(`/notifications/${id}/read`),
   markAllAsRead: () => api.patch('/notifications/read-all'),
+};
+
+// ========== SETTINGS API ==========
+export const settingsAPI = {
+  getSettings: () => api.get('/settings'),
+  updateSettings: (data) => api.patch('/settings', data),
 };
 
 export default api;

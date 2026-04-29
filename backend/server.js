@@ -6,6 +6,7 @@ require('dotenv').config();
 
 const connectDB = require('./config/db');
 const errorHandler = require('./middleware/errorHandler');
+const maintenance = require('./middleware/maintenance');
 
 // Route imports
 const authRoutes = require('./routes/authRoutes');
@@ -13,6 +14,7 @@ const articleRoutes = require('./routes/articleRoutes');
 const categoryRoutes = require('./routes/categoryRoutes');
 const userRoutes = require('./routes/userRoutes');
 const notificationRoutes = require('./routes/notificationRoutes');
+const settingsRoutes = require('./routes/settingsRoutes');
 
 const app = express();
 
@@ -29,6 +31,7 @@ app.use(cors({
 }));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
+app.use(maintenance);
 
 // Serve uploaded files statically
 app.use('/uploads', express.static(uploadsDir));
@@ -39,6 +42,7 @@ app.use('/api/v1/articles', articleRoutes);
 app.use('/api/v1/categories', categoryRoutes);
 app.use('/api/v1/users', userRoutes);
 app.use('/api/v1/notifications', notificationRoutes);
+app.use('/api/v1/settings', settingsRoutes);
 
 // Health check
 app.get('/api/v1/health', (req, res) => {

@@ -1,22 +1,68 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { 
   FiSettings, FiUser, FiGlobe, FiLock, FiBell, FiShield, 
-  FiSave, FiCheckCircle, FiAlertCircle, FiChevronRight 
+  FiSave, FiCheckCircle, FiAlertCircle, FiChevronRight,
+  FiEye, FiEyeOff, FiActivity, FiTarget, FiSmartphone, FiMail
 } from 'react-icons/fi';
 import { useAuth } from '../../context/AuthContext';
-import { usersAPI } from '../../api';
+import { usersAPI, authAPI, settingsAPI } from '../../api';
 
 const AdminSettings = () => {
-  const { user, setUser } = useAuth();
+  const { user, setUser, logout } = useAuth();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('profile');
   const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState(null);
 
+  // Profile State
   const [profileData, setProfileData] = useState({
     name: user?.name || '',
     email: user?.email || '',
     bio: user?.bio || ''
   });
+
+  // Security State
+  const [passwords, setPasswords] = useState({
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: ''
+  });
+  const [showPass, setShowPass] = useState(false);
+
+  // System State
+  const [systemSettings, setSystemSettings] = useState({
+    siteName: 'NewsPortal',
+    siteDescription: '',
+    maintenanceMode: false,
+    allowRegistration: true,
+    contactEmail: ''
+  });
+
+  // Notifications State (Mock for now or can be added to user meta)
+  const [notifPrefs, setNotifPrefs] = useState({
+    emailOnSubmission: true,
+    emailOnApproval: true,
+    browserAlerts: true,
+    weeklyDigest: false
+  });
+
+  useEffect(() => {
+    if (activeTab === 'system') {
+      fetchSystemSettings();
+    }
+  }, [activeTab]);
+
+  const fetchSystemSettings = async () => {
+    setLoading(true);
+    try {
+      const res = await settingsAPI.getSettings();
+      setSystemSettings(res.data.data);
+    } catch (err) {
+      showToast('Failed to load system settings', 'error');
+    }
+    setLoading(false);
+  };
 
   const handleProfileUpdate = async (e) => {
     e.preventDefault();
@@ -27,6 +73,50 @@ const AdminSettings = () => {
       showToast('Profile updated successfully!', 'success');
     } catch (err) {
       showToast('Failed to update profile', 'error');
+    }
+    setLoading(false);
+  };
+
+  const handlePasswordUpdate = async (e) => {
+    e.preventDefault();
+    if (passwords.newPassword !== passwords.confirmPassword) {
+      showToast('Passwords do not match', 'error');
+      return;
+    }
+    setLoading(true);
+    try {
+      await authAPI.updatePassword({
+        currentPassword: passwords.currentPassword,
+        newPassword: passwords.newPassword
+      });
+      showToast('Password changed successfully! Logging out...', 'success');
+      
+      // Clear passwords
+      setPasswords({ currentPassword: '', newPassword: '', confirmPassword: '' });
+
+      // Redirect after short delay
+      setTimeout(() => {
+        logout();
+        navigate('/login', { 
+          state: { message: 'Password changed successfully, please login again' },
+          replace: true 
+        });
+      }, 2000);
+      
+    } catch (err) {
+      showToast(err.response?.data?.message || 'Failed to update password', 'error');
+      setLoading(false);
+    }
+  };
+
+  const handleSystemUpdate = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      await settingsAPI.updateSettings(systemSettings);
+      showToast('System settings updated!', 'success');
+    } catch (err) {
+      showToast('Failed to update system settings', 'error');
     }
     setLoading(false);
   };
@@ -52,34 +142,34 @@ const AdminSettings = () => {
         </div>
       )}
 
-      <div style={{ marginBottom: '40px' }}>
-        <h1 style={{ fontSize: '32px', fontWeight: 900, color: '#0f172a', margin: '0 0 10px' }}>Platform Settings</h1>
-        <p style={{ fontSize: '16px', color: '#64748b', margin: 0 }}>Configure system-wide preferences and identity parameters.</p>
+      <div style={{ marginBottom: '20px' }}>
+        <h1 style={{ fontSize: '24px', fontWeight: 900, color: '#0f172a', margin: '0 0 4px' }}>Platform Settings</h1>
+        <p style={{ fontSize: '14px', color: '#64748b', margin: 0 }}>Configure system-wide preferences and identity parameters.</p>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '280px 1fr', gap: '32px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '240px 1fr', gap: '20px' }}>
         {/* Navigation Sidebar */}
-        <div className="saas-card" style={{ padding: '16px', height: 'fit-content' }}>
+        <div className="saas-card" style={{ padding: '12px', height: 'fit-content' }}>
           {tabs.map(tab => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
               style={{
                 width: '100%',
-                padding: '14px 20px',
-                borderRadius: '12px',
+                padding: '10px 16px',
+                borderRadius: '10px',
                 border: 'none',
                 background: activeTab === tab.id ? 'rgba(59, 130, 246, 0.1)' : 'transparent',
                 color: activeTab === tab.id ? '#3b82f6' : '#64748b',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '12px',
-                fontSize: '14px',
+                gap: '10px',
+                fontSize: '13.5px',
                 fontWeight: 700,
                 cursor: 'pointer',
                 transition: 'all 0.2s ease',
                 textAlign: 'left',
-                marginBottom: '4px'
+                marginBottom: '2px'
               }}
             >
               {tab.icon}
@@ -90,53 +180,56 @@ const AdminSettings = () => {
         </div>
 
         {/* Content Area */}
-        <div className="saas-card" style={{ padding: '40px' }}>
+        <div className="saas-card" style={{ padding: '24px' }}>
           {activeTab === 'profile' && (
             <form onSubmit={handleProfileUpdate} className="animate-fade">
-              <div style={{ display: 'flex', alignItems: 'center', gap: '24px', marginBottom: '40px' }}>
-                <div style={{ width: '80px', height: '80px', borderRadius: '24px', background: 'linear-gradient(135deg, #e2e8f0, #cbd5e1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '32px', fontWeight: 800, color: '#475569' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '20px' }}>
+                <div style={{ width: '56px', height: '56px', borderRadius: '16px', background: 'linear-gradient(135deg, #3b82f6, #1d4ed8)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px', fontWeight: 800, color: 'white' }}>
                   {user?.name?.charAt(0)}
                 </div>
                 <div>
-                  <h3 style={{ margin: 0, fontSize: '20px', fontWeight: 800 }}>Profile Identity</h3>
-                  <p style={{ margin: '4px 0 0', color: '#64748b', fontSize: '14px' }}>Update your personal details and public profile.</p>
+                  <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 800 }}>Profile Identity</h3>
+                  <p style={{ margin: '2px 0 0', color: '#64748b', fontSize: '13px' }}>Update your personal details and public profile.</p>
                 </div>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', marginBottom: '24px' }}>
-                <div>
-                  <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: '#475569', marginBottom: '8px' }}>Full Name</label>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
+                <div className="form-group" style={{ marginBottom: '12px' }}>
+                  <label className="form-label" style={{ marginBottom: '4px', fontSize: '13px' }}>Full Name</label>
                   <input 
                     type="text" 
+                    className="form-input"
+                    style={{ padding: '8px 12px', fontSize: '14px' }}
                     value={profileData.name}
                     onChange={(e) => setProfileData({...profileData, name: e.target.value})}
-                    style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', border: '1px solid #e2e8f0', background: '#f8fafc', fontSize: '14px', outline: 'none' }}
                   />
                 </div>
-                <div>
-                  <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: '#475569', marginBottom: '8px' }}>Email Address</label>
+                <div className="form-group" style={{ marginBottom: '12px' }}>
+                  <label className="form-label" style={{ marginBottom: '4px', fontSize: '13px' }}>Email Address</label>
                   <input 
                     type="email" 
+                    className="form-input"
                     disabled
                     value={profileData.email}
-                    style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', border: '1px solid #e2e8f0', background: '#f1f5f9', color: '#94a3b8', fontSize: '14px', cursor: 'not-allowed' }}
+                    style={{ padding: '8px 12px', fontSize: '14px', background: '#f1f5f9', color: '#94a3b8', cursor: 'not-allowed' }}
                   />
                 </div>
               </div>
 
-              <div style={{ marginBottom: '40px' }}>
-                <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: '#475569', marginBottom: '8px' }}>Bio / Description</label>
+              <div className="form-group" style={{ marginBottom: '20px' }}>
+                <label className="form-label" style={{ marginBottom: '4px', fontSize: '13px' }}>Bio / Description</label>
                 <textarea 
-                  rows="4" 
+                  className="form-input"
+                  rows="2" 
                   value={profileData.bio}
                   onChange={(e) => setProfileData({...profileData, bio: e.target.value})}
                   placeholder="Tell us about yourself..."
-                  style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', border: '1px solid #e2e8f0', background: '#f8fafc', fontSize: '14px', outline: 'none', resize: 'none' }}
+                  style={{ padding: '8px 12px', fontSize: '14px', resize: 'none' }}
                 />
               </div>
 
-              <div style={{ borderTop: '1px solid #f1f5f9', paddingTop: '32px', display: 'flex', justifyContent: 'flex-end' }}>
-                <button type="submit" disabled={loading} className="btn-glow" style={{ background: '#3b82f6', color: 'white', border: 'none', padding: '14px 32px', borderRadius: '12px', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }}>
+              <div style={{ borderTop: '1px solid #f1f5f9', paddingTop: '16px', display: 'flex', justifyContent: 'flex-end' }}>
+                <button type="submit" disabled={loading} className="btn-glow" style={{ background: '#3b82f6', color: 'white', border: 'none', padding: '10px 24px', borderRadius: '10px', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '14px' }}>
                   {loading ? 'Saving...' : <><FiSave /> Save Changes</>}
                 </button>
               </div>
@@ -144,34 +237,194 @@ const AdminSettings = () => {
           )}
 
           {activeTab === 'system' && (
-            <div className="animate-fade">
-              <div style={{ display: 'flex', alignItems: 'center', gap: '24px', marginBottom: '40px' }}>
-                <div style={{ width: '64px', height: '64px', borderRadius: '16px', background: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px' }}>
+            <form onSubmit={handleSystemUpdate} className="animate-fade">
+              <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '20px' }}>
+                <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px' }}>
                   <FiGlobe />
                 </div>
                 <div>
-                  <h3 style={{ margin: 0, fontSize: '20px', fontWeight: 800 }}>System Configuration</h3>
-                  <p style={{ margin: '4px 0 0', color: '#64748b', fontSize: '14px' }}>Manage site-wide settings and SEO parameters.</p>
+                  <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 800 }}>System Configuration</h3>
+                  <p style={{ margin: '2px 0 0', color: '#64748b', fontSize: '13px' }}>Manage site-wide settings and SEO parameters.</p>
                 </div>
               </div>
 
-              <div style={{ padding: '60px', textAlign: 'center', background: '#f8fafc', borderRadius: '24px', border: '1px dashed #cbd5e1' }}>
-                <FiShield size={48} style={{ color: '#cbd5e1', marginBottom: '16px' }} />
-                <h4 style={{ margin: 0, fontSize: '18px', fontWeight: 800 }}>Admin Only Module</h4>
-                <p style={{ margin: '8px 0 0', color: '#64748b', fontSize: '14px' }}>This section is currently being synced with the backend environment.</p>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
+                <div className="form-group" style={{ marginBottom: '12px' }}>
+                  <label className="form-label" style={{ marginBottom: '4px', fontSize: '13px' }}>Site Name</label>
+                  <input 
+                    type="text" 
+                    className="form-input"
+                    style={{ padding: '8px 12px', fontSize: '14px' }}
+                    value={systemSettings.siteName}
+                    onChange={(e) => setSystemSettings({...systemSettings, siteName: e.target.value})}
+                  />
+                </div>
+                <div className="form-group" style={{ marginBottom: '12px' }}>
+                  <label className="form-label" style={{ marginBottom: '4px', fontSize: '13px' }}>Contact Email</label>
+                  <input 
+                    type="email" 
+                    className="form-input"
+                    style={{ padding: '8px 12px', fontSize: '14px' }}
+                    value={systemSettings.contactEmail}
+                    onChange={(e) => setSystemSettings({...systemSettings, contactEmail: e.target.value})}
+                  />
+                </div>
               </div>
-            </div>
+
+              <div className="form-group" style={{ marginBottom: '16px' }}>
+                <label className="form-label" style={{ marginBottom: '4px', fontSize: '13px' }}>Site Description</label>
+                <textarea 
+                  className="form-input"
+                  rows="2" 
+                  value={systemSettings.siteDescription}
+                  onChange={(e) => setSystemSettings({...systemSettings, siteDescription: e.target.value})}
+                  style={{ padding: '8px 12px', fontSize: '14px', resize: 'none' }}
+                />
+              </div>
+
+              <div style={{ display: 'flex', gap: '24px', marginBottom: '24px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <input 
+                    type="checkbox" 
+                    id="maint-mode"
+                    checked={systemSettings.maintenanceMode}
+                    onChange={(e) => setSystemSettings({...systemSettings, maintenanceMode: e.target.checked})}
+                    style={{ width: '16px', height: '16px', cursor: 'pointer' }}
+                  />
+                  <label htmlFor="maint-mode" style={{ fontSize: '13px', fontWeight: 600, cursor: 'pointer' }}>Maintenance Mode</label>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <input 
+                    type="checkbox" 
+                    id="allow-reg"
+                    checked={systemSettings.allowRegistration}
+                    onChange={(e) => setSystemSettings({...systemSettings, allowRegistration: e.target.checked})}
+                    style={{ width: '16px', height: '16px', cursor: 'pointer' }}
+                  />
+                  <label htmlFor="allow-reg" style={{ fontSize: '13px', fontWeight: 600, cursor: 'pointer' }}>Allow Registration</label>
+                </div>
+              </div>
+
+              <div style={{ borderTop: '1px solid #f1f5f9', paddingTop: '16px', display: 'flex', justifyContent: 'flex-end' }}>
+                <button type="submit" disabled={loading} className="btn-glow" style={{ background: '#3b82f6', color: 'white', border: 'none', padding: '10px 24px', borderRadius: '10px', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '14px' }}>
+                  {loading ? 'Saving...' : <><FiSave /> Update System</>}
+                </button>
+              </div>
+            </form>
           )}
 
           {activeTab === 'security' && (
-            <div className="animate-fade" style={{ textAlign: 'center', padding: '80px 0' }}>
-              <FiLock size={64} style={{ color: '#e2e8f0', marginBottom: '24px' }} />
-              <h3 style={{ margin: 0, fontSize: '24px', fontWeight: 800 }}>Security Protocol</h3>
-              <p style={{ color: '#64748b', maxWidth: 400, margin: '16px auto', fontSize: '14px', lineHeight: 1.6 }}>
-                Manage your credentials and two-factor authentication settings. 
-                <br/>
-                <span style={{ color: '#3b82f6', fontWeight: 700, cursor: 'pointer' }}>Click here to reset password.</span>
-              </p>
+            <form onSubmit={handlePasswordUpdate} className="animate-fade">
+              <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '20px' }}>
+                <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px' }}>
+                  <FiLock />
+                </div>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 800 }}>Security Protocol</h3>
+                  <p style={{ margin: '2px 0 0', color: '#64748b', fontSize: '13px' }}>Manage your credentials and authentication settings.</p>
+                </div>
+              </div>
+
+              <div style={{ maxWidth: '440px' }}>
+                <div className="form-group" style={{ marginBottom: '12px' }}>
+                  <label className="form-label" style={{ marginBottom: '4px', fontSize: '13px' }}>Current Password</label>
+                  <div style={{ position: 'relative' }}>
+                    <input 
+                      type={showPass ? "text" : "password"} 
+                      className="form-input"
+                      required
+                      style={{ padding: '8px 12px', fontSize: '14px' }}
+                      value={passwords.currentPassword}
+                      onChange={(e) => setPasswords({...passwords, currentPassword: e.target.value})}
+                    />
+                    <button type="button" onClick={() => setShowPass(!showPass)} style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer' }}>
+                      {showPass ? <FiEyeOff size={16} /> : <FiEye size={16} />}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="form-group" style={{ marginBottom: '12px' }}>
+                  <label className="form-label" style={{ marginBottom: '4px', fontSize: '13px' }}>New Password</label>
+                  <input 
+                    type="password" 
+                    className="form-input"
+                    required
+                    style={{ padding: '8px 12px', fontSize: '14px' }}
+                    value={passwords.newPassword}
+                    onChange={(e) => setPasswords({...passwords, newPassword: e.target.value})}
+                  />
+                </div>
+
+                <div className="form-group" style={{ marginBottom: '24px' }}>
+                  <label className="form-label" style={{ marginBottom: '4px', fontSize: '13px' }}>Confirm New Password</label>
+                  <input 
+                    type="password" 
+                    className="form-input"
+                    required
+                    style={{ padding: '8px 12px', fontSize: '14px' }}
+                    value={passwords.confirmPassword}
+                    onChange={(e) => setPasswords({...passwords, confirmPassword: e.target.value})}
+                  />
+                </div>
+
+                <div style={{ borderTop: '1px solid #f1f5f9', paddingTop: '16px', display: 'flex', justifyContent: 'flex-end' }}>
+                  <button type="submit" disabled={loading} className="btn-glow" style={{ background: '#ef4444', color: 'white', border: 'none', padding: '10px 24px', borderRadius: '10px', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '14px' }}>
+                    {loading ? 'Updating...' : 'Update Password'}
+                  </button>
+                </div>
+              </div>
+            </form>
+          )}
+
+          {activeTab === 'notifications' && (
+            <div className="animate-fade">
+              <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '20px' }}>
+                <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px' }}>
+                  <FiBell />
+                </div>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 800 }}>Alert Preferences</h3>
+                  <p style={{ margin: '2px 0 0', color: '#64748b', fontSize: '13px' }}>Control platform alerts and email notifications.</p>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                {[
+                  { id: 'emailOnSubmission', label: 'Email on submission', icon: <FiMail />, desc: 'Alerts for new article submissions.' },
+                  { id: 'emailOnApproval', label: 'Email on approval', icon: <FiCheckCircle />, desc: 'Confirmation when articles go live.' },
+                  { id: 'browserAlerts', label: 'Browser notifications', icon: <FiActivity />, desc: 'Real-time dashboard alerts.' },
+                  { id: 'weeklyDigest', label: 'Weekly digest', icon: <FiTarget />, desc: 'Summary of site performance.' }
+                ].map((pref) => (
+                  <div key={pref.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', borderRadius: '12px', background: '#f8fafc', border: '1px solid #f1f5f9' }}>
+                    <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                      <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: 'white', color: '#64748b', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid #e2e8f0', fontSize: '14px' }}>
+                        {pref.icon}
+                      </div>
+                      <div>
+                        <h4 style={{ margin: 0, fontSize: '14px', fontWeight: 700 }}>{pref.label}</h4>
+                        <p style={{ margin: '0', fontSize: '11px', color: '#94a3b8' }}>{pref.desc}</p>
+                      </div>
+                    </div>
+                    <div 
+                      onClick={() => setNotifPrefs({...notifPrefs, [pref.id]: !notifPrefs[pref.id]})}
+                      style={{ 
+                        width: '40px', 
+                        height: '22px', 
+                        borderRadius: '11px', 
+                        background: notifPrefs[pref.id] ? '#3b82f6' : '#e2e8f0',
+                        padding: '3px',
+                        cursor: 'pointer',
+                        transition: 'all 0.3s ease',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: notifPrefs[pref.id] ? 'flex-end' : 'flex-start'
+                      }}
+                    >
+                      <div style={{ width: '16px', height: '16px', borderRadius: '50%', background: 'white' }} />
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
         </div>
@@ -181,4 +434,5 @@ const AdminSettings = () => {
 };
 
 export default AdminSettings;
+
 
